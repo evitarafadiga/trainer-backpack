@@ -1,5 +1,5 @@
 
-const TrainerCard = ({ playTime, money, playerName, cardColor }) => {
+const TrainerCard = ({ playTime, money, playerName }) => {
     return (
         <div className="rounded-lg bg-slate-300 w-[352px] h-[201px]">
 
