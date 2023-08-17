@@ -5,21 +5,29 @@ import Pokedex from 'pokedex-promise-v2';
 const P = new Pokedex();
 
 const interval = {
-    limit: 1010,
+    limit: 10,
     offset: 0
 }
 
-P.getPokemonsList(interval)
-    .then((response) => {
-      console.log(response);
-    })
+const dex = [];
 
-const data = [
-    { label: 'Ex opt 1', value: 1 },
-    { label: 'Ex opt 2', value: 2 },
-    { label: 'Ex opt 3', value: 3 },
-    { label: 'Ex opt 4', value: 4 },
-]
+function NationalDex() {
+
+    P.getPokemonsList(interval)
+        .then((response) => {
+            {
+                response.results.map(results => {
+                    let temp = [];
+                    temp.label = results.name;
+                    temp.value = dex.length;
+                    dex.push(temp)
+                })
+            }
+    })
+};
+
+NationalDex();
+
 
 export function Dropdown() {
     return (
@@ -28,7 +36,7 @@ export function Dropdown() {
 
                 Pokémon:
                 <SimpleDropdown
-                    options={data}
+                    options={dex}
                     clearable
                     searchable
                     configs={
@@ -37,11 +45,12 @@ export function Dropdown() {
                 />
 
             </div>
+            {/*]
             <div className='w-10'></div>
             <div className='justify-center text-sm'>
                 Badge:
                 <SimpleDropdown
-                    options={data}
+                    options={dex}
                     clearable
                     searchable
                     configs={
@@ -49,6 +58,7 @@ export function Dropdown() {
                     }
                 />
             </div>
+            */}            
         </div>
     );
 }
