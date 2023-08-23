@@ -20,7 +20,7 @@ function NationalDex() {
                 temp.label = results.name;
                 temp.value = dex.length;
                 dex.push(temp);
-                return
+                return(dex)
             })
         })
 };
