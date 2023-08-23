@@ -10,6 +10,9 @@ export default function App() {
   const [playerName, setName] = React.useState(localStorage.getItem("playerName"));
   const [seasonsPlayed, setSeasons] = React.useState(localStorage.getItem("seasonsPlayed"));
 
+  const [color, setColor] = React.useState('#FF0000');
+
+
   return (
     <div className="flex flex-col h-screen justify-between">
 
@@ -19,8 +22,8 @@ export default function App() {
           {/*max 25 characters for trainer name*/}
           <TrainerCard playerName={playerName} playTime={seasonsPlayed} money={"122"} badge={""} />
         </div>
-        <div className="flex justify-center items-center space-x-4 text-base">
-          <form>
+        <div className="flex flex-col justify-center items-center space-x-4 text-base">
+          <form className="flex flex-col">
             <label className="p-2">
               Name:
               <input className="m-1 border border-black rounded" type="text" name="playerName" value={playerName} onChange={(e) => setName(e.target.value && localStorage.setItem("playerName", e.target.value))}/>
@@ -34,6 +37,25 @@ export default function App() {
             </button>
 
           </form>
+
+          <form>
+        <label htmlFor="color-picker">
+          Select a color:
+        </label>
+        <input
+          type="color"
+          id="color-picker"
+          value={color}
+          onChange={event => {
+            setColor(event.target.value);
+          }}
+        />
+      </form>
+      
+      <p>
+        <strong>Current value:</strong>
+        {color}
+      </p>
         </div>
         <div className="flex py-10 justify-center items-center space-x-4 text-base">
           <Dropdown />
@@ -42,7 +64,7 @@ export default function App() {
       </div>
 
       {/*footer*/}
-      <div className="bg-cover bg-center h-full flex-row flex-wrap items-center justify-center" style={{ backgroundImage: `url(${footerURL})`, }}>
+      <div className="bg-cover h-full" style={{ backgroundImage: `url(${footerURL})`, }}>
 
       </div>
     </div>
