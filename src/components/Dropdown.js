@@ -15,25 +15,22 @@ function NationalDex() {
 
     P.getPokemonsList(interval)
         .then((response) => {
-            {
-                response.results.map(results => {
-                    let temp = [];
-                    temp.label = results.name;
-                    temp.value = dex.length;
-                    dex.push(temp)
-                })
-            }
-    })
+            response.results.map(results => {
+                let temp = [];
+                temp.label = results.name;
+                temp.value = dex.length;
+                dex.push(temp);
+            })
+        })
 };
 
 NationalDex();
 
-
 export function Dropdown() {
+
     return (
         <div className='flex'>
             <div className='justify-center text-sm'>
-
                 Pokémon:
                 <SimpleDropdown
                     options={dex}
@@ -43,22 +40,7 @@ export function Dropdown() {
                         { position: { y: 'bottom', x: 'center' } }
                     }
                 />
-
             </div>
-            {/*]
-            <div className='w-10'></div>
-            <div className='justify-center text-sm'>
-                Badge:
-                <SimpleDropdown
-                    options={dex}
-                    clearable
-                    searchable
-                    configs={
-                        { position: { y: 'bottom', x: 'center' } }
-                    }
-                />
-            </div>
-            */}            
         </div>
     );
 }
