@@ -1,11 +1,13 @@
 import TrainerCard from "./components/TrainerCard"
-import Dropdown from "./components/Dropdown";
-import TrainerSpritePicker from "./components/TrainerSpritePicker";
-import React from 'react';
-import Pokedex from 'pokedex-promise-v2';
-import html2canvas from 'html2canvas';
-import Alert from "./components/Alert";
-import BadgePicker from "./components/BadgePicker";
+import TrainerBackgroundPicker from "./components/TrainerBackgroundPicker"
+import Dropdown from "./components/Dropdown"
+import TrainerSpritePicker from "./components/TrainerSpritePicker"
+import React from 'react'
+import Pokedex from 'pokedex-promise-v2'
+import html2canvas from 'html2canvas'
+import Alert from "./components/Alert"
+import BadgePicker from "./components/BadgePicker"
+import backgrounds from "./backgrounds.json"
 
 const P = new Pokedex();
 const footerURL = "./img/footer-texture.png";
@@ -15,6 +17,12 @@ export default function App() {
 
   const [playerName, setName] = React.useState(localStorage.getItem("playerName") || "Trainer");
   const [seasonsPlayed, setSeasons] = React.useState(localStorage.getItem("seasonsPlayed") || "0");
+  const [backgroundImg, setBackgroundImg] = React.useState(localStorage.getItem("backgroundImg") || "");
+  const [backgroundLabel, setBackgroundLabel] = React.useState(
+    localStorage.getItem("backgroundLabel") ||
+    backgrounds.find(b => b.image === backgroundImg)?.label ||
+    ""
+  );
   const cardRef = React.useRef(null);
 
   const [color, setColor] = React.useState(localStorage.getItem("cardColor1") || '#0a4b64ff');
@@ -39,7 +47,7 @@ export default function App() {
   const [badgeCount, setBadgeCount] = React.useState(0);
   const [money, setMoney] = React.useState(localStorage.getItem("money") || "00.00");
   const [allPokemons, setAllPokemons] = React.useState([]);
-  const [trainerImage, setTrainerImage] = React.useState(localStorage.getItem("trainerImage") || '');
+  const [trainerImage, setTrainerImage] = React.useState(localStorage.getItem("trainerImage") || 'https://play.pokemonshowdown.com/sprites/trainers/aaron.png');
 
   React.useEffect(() => {
     const loadPokemons = async () => {
@@ -74,6 +82,14 @@ export default function App() {
   React.useEffect(() => { localStorage.setItem("pokemonImages", JSON.stringify(pokemonImages)); }, [pokemonImages]);
   React.useEffect(() => { localStorage.setItem("badges", JSON.stringify(badges)); }, [badges]);
   React.useEffect(() => { localStorage.setItem("trainerImage", trainerImage); }, [trainerImage]);
+  React.useEffect(() => { localStorage.setItem("backgroundImg", backgroundImg); }, [backgroundImg]);
+  React.useEffect(() => { localStorage.setItem("backgroundLabel", backgroundLabel); }, [backgroundLabel]);
+
+  const handleBackgroundSelect = (imageUrl) => {
+    setBackgroundImg(imageUrl);
+    const matched = backgrounds.find(b => b.image === imageUrl);
+    setBackgroundLabel(matched?.label || "Personalizado");
+  };
 
   const handlePokemonSelect = (pokemonName) => {
     console.log('App received pokemon:', pokemonName);
@@ -142,11 +158,11 @@ export default function App() {
     if (cardRef.current) {
       try {
         const canvas = await html2canvas(cardRef.current, {
-            useCORS: true,
-            allowTaint: true,
-            crossOrigin: 'anonymous',
-            scale: 2, // Higher resolution
-            backgroundColor: null,
+          useCORS: true,
+          allowTaint: true,
+          crossOrigin: 'anonymous',
+          scale: 2, // Higher resolution
+          backgroundColor: null,
         });
 
         canvas.toBlob(blob => {
@@ -181,18 +197,20 @@ export default function App() {
             <h2 className="text-xl font-bold text-slate-700 mb-6 hidden lg:block">Prévia</h2>
             <div className="transform transition-transform hover:scale-105 duration-300 shadow-2xl rounded-lg">
               <div ref={cardRef}>
-                <TrainerCard
-                  playerName={playerName}
-                  trainerImage={trainerImage}
-                  playTime={seasonsPlayed}
-                  money={money}
-                  badges={badges}
-                  badgeCount={badgeCount}
-                  cardColor1={color}
-                  cardColor2={color2}
-                  pokemonImages={pokemonImages}
-                  onRemovePokemon={removePokemon}
-                />
+<TrainerCard
+                   playerName={playerName}
+                   trainerImage={trainerImage}
+                   playTime={seasonsPlayed}
+                   money={money}
+                   badges={badges}
+                   badgeCount={badgeCount}
+                   cardColor1={color}
+                   cardColor2={color2}
+                   pokemonImages={pokemonImages}
+                   onRemovePokemon={removePokemon}
+                   onRemoveBadge={removeBadge}
+                   backgroundImg={backgroundImg}
+                 />
               </div>
             </div>
             <button
@@ -228,7 +246,7 @@ export default function App() {
                       name="playerName"
                       value={playerName}
                       onChange={(e) => setName(e.target.value)}
-                      maxLength={47} 
+                      maxLength={47}
                     />
                   </div>
                   <div className="flex flex-col">
@@ -237,7 +255,7 @@ export default function App() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
                       type="text"
                       placeholder="00.00"
-                      maxLength={10} 
+                      maxLength={10}
                       value={money}
                       onChange={(e) => setMoney(e.target.value)}
                     />
@@ -248,7 +266,7 @@ export default function App() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
                       type="text"
                       placeholder="0"
-                      maxLength={10} 
+                      maxLength={10}
                       value={seasonsPlayed}
                       onChange={(e) => setSeasons(e.target.value)}
                     />
@@ -286,6 +304,16 @@ export default function App() {
                         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] p-0 border-none cursor-pointer"
                       />
                     </div>
+                  </div>                  
+
+                  {/* Visual background picker cards */}
+                  <div className="w-full mt-4">
+                    <label className="text-sm font-medium text-slate-600 mb-2 block">Escolher Fundo</label>
+                    <TrainerBackgroundPicker
+                      backgrounds={backgrounds}
+                      selectedLabel={backgroundLabel}
+                      onSelect={handleBackgroundSelect}
+                    />
                   </div>
                 </div>
               </section>
@@ -311,25 +339,17 @@ export default function App() {
                 <h3 className="text-lg font-semibold text-slate-800 border-b pb-2 mb-4 flex items-center gap-2">
                   <span className="bg-yellow-100 text-yellow-600 py-1 px-2 rounded text-sm">04</span> Insígnias
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[1, 2, 3, 4, 5, 6].map((num) => (
-                    <div key={num} className="bg-gray-50 p-3 rounded-lg border border-gray-200 hover:border-yellow-300 transition-colors">
-                      <BadgePicker
-                        pos={num}
-                        onSelect={addBadge}
-                        disabled={badges[num - 1]}
-                      />
-                      {badges[num - 1] && (
-                        <button
-                          onClick={() => removeBadge(num - 1)}
-                          className="mt-2 text-xs text-red-500 hover:text-red-700 underline"
-                        >
-                          Remover
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                   {[1, 2, 3, 4, 5, 6].map((num) => (
+                     <div key={num} className="bg-gray-50 p-3 rounded-lg border border-gray-200 hover:border-yellow-300 transition-colors">
+                       <BadgePicker
+                         pos={num}
+                         onSelect={addBadge}
+                         disabled={badges[num - 1]}
+                       />
+                     </div>
+                   ))}
+                 </div>
               </section>
 
               {/* Section: Trainer Sprite */}
