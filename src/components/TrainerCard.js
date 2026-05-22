@@ -10,6 +10,42 @@ const TrainerCard = ({
     badgeCount,
     onRemovePokemon,
 }) => {
+    /*
+     * CARD: 452 × 244
+     *
+     * Bars and strips share the same left edge = BAR_L.
+     * All Y positions are absolute from the card top (margin-top = 0 on
+     * the card wrapper, bars use top: N from the natural flow chain).
+     *
+     * ─── X budget ───────────────────────────────────────────────
+     *   0 ─ 14  left indent                         (AV_L)
+     *  14 ─ 104  avatar sprite area                 (AV_W=90)
+     * 104 ─ 118  gap between avatar and bars        (GAP_X=14)
+     * 118 ─ 452  bars / badge strip / party content (BAR_W=320)
+     *
+     * ─── Y chain ───────────────────────────────────────────────
+     *   Y=20   card false top (used as first bar top via margin)
+     *   Y=20   gray top bar
+     *   Y=62   name bar   (20+42 top + 42 ht = 62)
+     *   Y=94   money bar  (62+22 gap + 32 ht = 94)
+     *  ┌ chip at Y≈80 (between name=62 and money=94)
+     *  Y=126  level bar   (94+10 gap + 22 ht = 126)
+     *  Y=144  badge strip (126+8 gap + 18 ht = 144)
+     *  Y=244  card bottom
+     *  party bar: bottom:0, height=100
+     *  top of party = 244 ─ 100 = 144 = badge bottom. Fits exactly.  ✓
+     */
+    const CARD_W  = 452;
+    const AV_W    = 90;
+    const AV_L    = 14;
+    const GAP_X   = 14;
+    const BAR_L   = AV_L + AV_W + GAP_X;           /* 118  bars left edge  */
+    const BAR_PAD = 14;
+    const BAR_W   = CARD_W - BAR_L - BAR_PAD;      /* 320  bars right edge → 438 */
+    const GAP     = 10;
+    const CHIP_X  = 42;
+    const CHIP_Y  = 80;
+
     return (
         <div
             className="rounded-lg select-none"
@@ -24,36 +60,32 @@ const TrainerCard = ({
         >
             {
 /*
-     * ROW 1 · STATS STRIP
-     * ─────────────────────────────────────────────────────────
-     * All px measured from card's top-left corner (0,0).
-     *
-     * Y-axis layout:
-     *   0   ─ 42   gray top bar
-     *   42  ─ 74   name bar
-     *   68  ─ 100  money bar (+26px gap below name bar)
-     *   84  ─ 106  level bar (+8px gap below money bar)
-     *   110 ─ 128  badge strip (+6px gap)
-     *   party bar  sits at bottom: absolute bottom:0, height:100
-     *
-     * X-axis offsets:
-     *   left 14   → avatar circle + trainer sprite  (top:-8, so it bleeds 8px above the gray bar)
-     *   left 118  → bars / badge strip  (90px avatar + 14px left-pad + 14px gap)
-     *   right: 452 (card edge — bars are 333px wide, so right edge = 118 + 333 = 451)
-     */
+ * Gray bar, name bar, money bar, chip icon, level bar,
+ * badge strip enter the natural block flow in that order.
+ * Each bar accounts for its own vertical position via margin-top
+ * so the Y chain adds up exactly to the card height.
+ */
             }
 
-            {/* ── trainer sprite — absolute so it bleeds 8px above the gray bar ── */}
+            {/* ── gray top bar ── */}
+            <div style={{
+                width: 452,
+                height: 42,
+                marginTop: 0,
+                background: "#7a7a8a",
+            }} />
+
+            {/* ── trainer sprite — absolute so it bleeds 8px into the gray bar ── */}
             <img
                 src={trainerImage}
-                alt=""
+                alt="Trainer"
                 draggable={false}
                 style={{
                     position: "absolute",
-                    top: -8,   /* 8px above the gray bar */
-                    left: 14,
-                    width: 90,
-                    height: 90,
+                    top: -8,          /* 8px bleeds above the gray bar → shows from Y=12 */
+                    left: AV_L,       /* 14px from card-left */
+                    width: AV_W,      /* 90ix */
+                    height: AV_W,     /* 90px */
                     imageRendering: "pixelated",
                     pointerEvents: "none",
                     userSelect: "none",
@@ -63,12 +95,11 @@ const TrainerCard = ({
 
             {/* ── name bar ── */}
             <div style={{
-                marginLeft: 118,   /* no relative parent needed — Y is handled bottom margin chain */
-                width: 333,
+                marginLeft: BAR_L,
+                width: BAR_W,
                 height: 32,
                 background: "#1e1e2e",
-                borderTopLeftRadius: 8,
-                borderBottomLeftRadius: 8,
+                borderRadius: "8px 0 0 8px",
                 display: "flex",
                 alignItems: "flex-end",
                 justifyContent: "center",
@@ -82,20 +113,35 @@ const TrainerCard = ({
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    maxWidth: 315,
+                    maxWidth: "100%",
                     padding: "0 4px",
                 }}>{playerName}</span>
             </div>
 
+            {/* ── chip icon ── */}
+            <img
+                src="https://i.imgur.com/H0qbp2F.png"
+                alt=""
+                style={{
+                    position: "absolute",
+                    top: CHIP_Y,   /* 80: between name(62) and money(94) */
+                    left: CHIP_X,  /* 42 */
+                    width: 52,
+                    height: 20,
+                    transform: "rotate(90deg)",
+                    pointerEvents: "none",
+                    userSelect: "none",
+                }}
+            />
+
             {/* ── money bar ── */}
             <div style={{
-                marginLeft: 118,
-                marginTop: 20,   /* 28px below name bar (42+32+20 = 94 → name bar ends at 74, 74+20 = 94) */
-                width: 215,
+                marginLeft: BAR_L,
+                marginTop: GAP,
+                width: BAR_W,
                 height: 32,
                 background: "#7aa5c2",
-                borderTopLeftRadius: 8,
-                borderBottomLeftRadius: 8,
+                borderRadius: "8px 0 0 8px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -109,40 +155,19 @@ const TrainerCard = ({
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
-                    maxWidth: 165,
+                    maxWidth: 200,
                 }}>{money}</span>
-                <img
-                    src="https://i.imgur.com/AT8Smxa.png"
-                    alt="$"
-                    style={{ width: 22, height: 22, filter: "invert(1)" }}
-                />
+                <img src="https://i.imgur.com/AT8Smxa.png" alt="$" style={{ width: 22, height: 22, filter: "invert(1)" }} />
             </div>
-
-            {/* ── chip icon (rotated 90°, placed over the boundary between name+money bars) ── */}
-            <img
-                src="https://i.imgur.com/H0qbp2F.png"
-                alt=""
-                style={{
-                    position: "absolute",
-                    top: 110,
-                    left: 42,
-                    width: 52,
-                    height: 20,
-                    transform: "rotate(90deg)",
-                    pointerEvents: "none",
-                    userSelect: "none",
-                }}
-            />
 
             {/* ── level bar ── */}
             <div style={{
-                marginLeft: 118,
-                marginTop: 8,   /* 8px below money bar → 94+32+8 = 134 */
-                width: 215,
+                marginLeft: BAR_L,
+                marginTop: GAP,
+                width: BAR_W,
                 height: 22,
                 background: "#7aa5c2",
-                borderTopLeftRadius: 8,
-                borderBottomLeftRadius: 8,
+                borderRadius: "8px 0 0 8px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -155,10 +180,10 @@ const TrainerCard = ({
                 }}>Nível {playTime}</span>
             </div>
 
-            {/* ── badge strip (7 slots, 18px each, 2px gap) ── */}
+            {/* ── badge strip (7 × 18px slots, 2px gaps) ── */}
             <div style={{
-                marginLeft: 118,
-                marginTop: 12,
+                marginLeft: BAR_L,
+                marginTop: GAP,
                 display: "flex",
                 alignItems: "center",
                 gap: 2,
@@ -186,67 +211,55 @@ const TrainerCard = ({
                 ))}
             </div>
 
-            {/* ════════ ROW 2 · PARTY BAR ════════ */}
-            {/* absolute to card bottom; width fills card body (no side padding) */}
+            {/* ── party bar
+                * 146px top section + 98px party = 244 = CARD_H ✓
+                * BAR_L=14+90+14=118: party bar baseline
+                * b2ed968: slot-0 = 100×52; slots 1-5 = 36×36; gap=4
+                * 100 + 5×36 + 6×4 = 304 ≤ 452 ✓ */}
             <div
                 style={{
                     position: "absolute",
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    height: 100,
+                    height: 98,
                     background: "#ffffff",
                     display: "flex",
                     alignItems: "flex-end",
-                    paddingLeft: 14,
+                    paddingLeft: AV_L,
                     paddingBottom: 8,
+                    gap: 4,
                     boxSizing: "border-box",
-                    gap: 0,
                 }}
             >
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                     <button
                         key={i}
                         onClick={() => onRemovePokemon?.(i)}
-                        title="Clique para remover"
                         style={{
                             display: "flex",
                             alignItems: "flex-end",
-                            justifyContent: "flex-end",
                             background: "transparent",
                             border: "none",
                             cursor: "pointer",
                             padding: 0,
                             flexShrink: 0,
-                            overflow: "visible",
-                            /* slot 0 slot-sized; slots 1-5 are 36×36 */
+                            overflow: "hidden",
                             ...(i === 0
-                                ? { width: 100, height: 52 }   /* b2ed968: w-[100px] h-[52px] */
+                                ? { width: 100, height: 52 }
                                 : { width: 36, height: 36 }),
                         }}
                     >
-                        {i === 0 ? (
-                            /* slot 0 — pokemon sprite, full slot */
-                            <div style={{
-                                width: 100,
-                                height: 52,
-                                backgroundImage: `url(${pokemonImages?.[0] || ""})`,
-                                backgroundSize: "contain",
-                                backgroundRepeat: "no-repeat",
-                                backgroundPosition: "center",
-                                backgroundColor: "#eeeeee",
-                            }} />
-                        ) : (
-                            /* slots 1-5 — square sprites */
-                            <div style={{
-                                width: 36,
-                                height: 36,
+                        <div
+                            style={{
+                                width: "100%",
+                                height: "100%",
                                 backgroundImage: `url(${pokemonImages?.[i] || ""})`,
                                 backgroundSize: "cover",
                                 backgroundPosition: "center",
-                                backgroundColor: "#eeeeee",
-                            }} />
-                        )}
+                                backgroundColor: pokemonImages?.[i] ? "" : "#eeeeee",
+                            }}
+                        />
                     </button>
                 ))}
             </div>
