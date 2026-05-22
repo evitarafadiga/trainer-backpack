@@ -1,5 +1,6 @@
 import TrainerCard from "./components/TrainerCard"
 import Dropdown from "./components/Dropdown";
+import TrainerSpritePicker from "./components/TrainerSpritePicker";
 import React from 'react';
 import Pokedex from 'pokedex-promise-v2';
 import html2canvas from 'html2canvas';
@@ -13,7 +14,7 @@ const footerURL = "./img/footer-texture.png";
 export default function App() {
 
   const [playerName, setName] = React.useState(localStorage.getItem("playerName") || "Trainer");
-  const [seasonsPlayed, setSeasons] = React.useState(localStorage.getItem("seasonsPlayed") || "000:00");
+  const [seasonsPlayed, setSeasons] = React.useState(localStorage.getItem("seasonsPlayed") || "0");
   const cardRef = React.useRef(null);
 
   const [color, setColor] = React.useState(localStorage.getItem("cardColor1") || '#0a4b64ff');
@@ -27,10 +28,18 @@ export default function App() {
     }
   });
 
-  const [badges, setBadges] = React.useState([]);
+  const [badges, setBadges] = React.useState(() => {
+    const saved = localStorage.getItem("badges");
+    try {
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [badgeCount, setBadgeCount] = React.useState(0);
   const [money, setMoney] = React.useState(localStorage.getItem("money") || "00.00");
   const [allPokemons, setAllPokemons] = React.useState([]);
+  const [trainerImage, setTrainerImage] = React.useState(localStorage.getItem("trainerImage") || '');
 
   React.useEffect(() => {
     const loadPokemons = async () => {
@@ -63,6 +72,8 @@ export default function App() {
   React.useEffect(() => { localStorage.setItem("cardColor1", color); }, [color]);
   React.useEffect(() => { localStorage.setItem("cardColor2", color2); }, [color2]);
   React.useEffect(() => { localStorage.setItem("pokemonImages", JSON.stringify(pokemonImages)); }, [pokemonImages]);
+  React.useEffect(() => { localStorage.setItem("badges", JSON.stringify(badges)); }, [badges]);
+  React.useEffect(() => { localStorage.setItem("trainerImage", trainerImage); }, [trainerImage]);
 
   const handlePokemonSelect = (pokemonName) => {
     console.log('App received pokemon:', pokemonName);
@@ -131,9 +142,11 @@ export default function App() {
     if (cardRef.current) {
       try {
         const canvas = await html2canvas(cardRef.current, {
-          useCORS: true,
-          scale: 2, // Higher resolution
-          backgroundColor: null,
+            useCORS: true,
+            allowTaint: true,
+            crossOrigin: 'anonymous',
+            scale: 2, // Higher resolution
+            backgroundColor: null,
         });
 
         canvas.toBlob(blob => {
@@ -170,6 +183,7 @@ export default function App() {
               <div ref={cardRef}>
                 <TrainerCard
                   playerName={playerName}
+                  trainerImage={trainerImage}
                   playTime={seasonsPlayed}
                   money={money}
                   badges={badges}
@@ -214,6 +228,7 @@ export default function App() {
                       name="playerName"
                       value={playerName}
                       onChange={(e) => setName(e.target.value)}
+                      maxLength={47} 
                     />
                   </div>
                   <div className="flex flex-col">
@@ -222,6 +237,7 @@ export default function App() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
                       type="text"
                       placeholder="00.00"
+                      maxLength={10} 
                       value={money}
                       onChange={(e) => setMoney(e.target.value)}
                     />
@@ -231,7 +247,8 @@ export default function App() {
                     <input
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
                       type="text"
-                      placeholder="000:00"
+                      placeholder="0"
+                      maxLength={10} 
                       value={seasonsPlayed}
                       onChange={(e) => setSeasons(e.target.value)}
                     />
@@ -312,6 +329,16 @@ export default function App() {
                       )}
                     </div>
                   ))}
+                </div>
+              </section>
+
+              {/* Section: Trainer Sprite */}
+              <section>
+                <h3 className="text-lg font-semibold text-slate-800 border-b pb-2 mb-4 flex items-center gap-2">
+                  <span className="bg-green-100 text-green-600 py-1 px-2 rounded text-sm">05</span> Sprite do Treinador
+                </h3>
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 hover:border-green-300 transition-colors">
+                  <TrainerSpritePicker value={trainerImage} onChange={setTrainerImage} />
                 </div>
               </section>
 

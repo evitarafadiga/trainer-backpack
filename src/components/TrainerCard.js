@@ -1,136 +1,231 @@
-const TrainerCard = ({ playTime, money, playerName, badges, pokemonImages, cardColor1, cardColor2, badgeCount, onRemovePokemon }) => {
+const TrainerCard = ({
+    playTime,
+    money,
+    playerName,
+    trainerImage,
+    badges,
+    pokemonImages,
+    cardColor1,
+    cardColor2,
+    badgeCount,
+    onRemovePokemon,
+}) => {
+    const slotBg = "#c8c8c8";        /* same grey as the original badge strip */
+
     return (
+        /* ── CARD FRAME ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ */
         <div
-            className="rounded-lg w-[452px] h-[244px]"
-            style={{ background: `linear-gradient(to right, ${cardColor1}, ${cardColor2}, ${cardColor1})` }}
+            className="rounded-lg overflow-hidden select-none"
+            style={{
+                width: "452px",
+                height: "244px",
+                background: `linear-gradient(to right, ${cardColor1}, ${cardColor2}, ${cardColor1})`,
+                position: "relative",
+            }}
         >
+            {/* ── ROW 1 — avatar + name strip ─ ─ ─ ─ ─ ─ ─ ─ ─ */}
+            <div
+                style={{
+                    position: "relative",
+                    paddingLeft: "14px",
+                    paddingTop: "20px",
+                    paddingBottom: "74px",
+                }}
+            >
+                {/* Trainer sprite — absolute so it bleeds above the name bar */}
+                <img
+                    src={trainerImage}
+                    alt="Trainer"
+                    style={{
+                        position: "absolute",
+                        top: -8,
+                        left: 14,
+                        width: 90,
+                        height: 90,
+                        imageRendering: "pixelated",
+                        imageSmoothingEnabled: false,
+                    }}
+                    draggable={false}
+                />
 
-            <div className="pb-[149px] pt-[20px] flex flex-col justify-center items-end">
-                <div className="bg-gray-700 w-full h-[42px]">
-                    <div className="pb-[112px] pt-[-16px] pl-[14px]">
-                        <div className="rounded-full bg-white w-[90px] h-[90px] bg-cover bg-center">
-                            <div className="pb-[154px] pt-[5px] pl-[105px]">
-                                <div className="rounded-lg rounded-e-none bg-slate-900 w-[333px] h-[32px] flex justify-center items-end pb-1">
-                                    <div className="font-pixel text-[14px] text-white leading-none p-1">
-                                        {playerName}
-                                    </div>
-                                </div>
-                                <div className="pl-[118px] pt-[20px]">
-                                    <div className="rounded-lg rounded-e-none bg-slate-700 w-[215px] h-[32px] flex justify-center items-end pb-1">
-                                        <div className="font-pixel text-[12px] text-black pl-2 leading-none p-1">
-                                            <span className="text-black text-[12px] text-gray-300">{money}</span>
-                                        </div>
-                                        <img src="https://i.imgur.com/AT8Smxa.png" alt="PokéDollars" className="w-[22px] object-cover invert"></img>
-                                    </div>
-                                </div>
-                                <div className="absolute rotate-90 -translate-x-1/2 -translate-y-1/2 pl-[44px] pb-[111px]">
-                                    <img src={'https://i.imgur.com/H0qbp2F.png'} alt="Trainercard Chip" className="w-[52px] object-cover"></img>
-                                </div>
-                                <div className="pl-[118px] pt-[5px]">
-                                    <div className="rounded-lg rounded-e-none bg-slate-700 w-[215px] h-[22px] flex justify-center items-end pb-1">
-                                        <div className="font-pixel text-[12px] text-black pl-2 leading-none">
-                                            <span className="text-black text-[12px] text-gray-300">Nível {playTime}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                {/* Name bar */}
+                <div
+                    style={{
+                        marginLeft: "105px",
+                        height: 32,
+                        background: "#1e1e2e",
+                        borderTopLeftRadius: "8px",
+                        borderBottomLeftRadius: "8px",
+                        display: "flex",
+                        alignItems: "flex-end",
+                        justifyContent: "center",
+                    }}
+                >
+                    <span
+                        style={{
+                            fontFamily: "'Press Start 2P', monospace",
+                            fontSize: "14px",
+                            lineHeight: "20px",
+                            color: "white",
+                        }}
+                    >
+                        {playerName}
+                    </span>
+                </div>
 
-                                <div className="pl-[118px] pt-[12px]">
-                                     <div className="flex bg-white w-[215px] grid grid-cols-7 h-[2px] flex-wrap justify-center items-center gap-1">
-                                         <div className="bg-gradient-to-r from-white w-[18px] h-[18px] overflow-hidden">
-                                             <div className="font-pixel text-[8px] text-black items-center justify-center pb-2 pl-2">
-                                                 {badges && <img src={badges[0]} className="absolute" />}
-                                             </div>
-                                         </div>
-                                         <div className="bg-gradient-to-r from-white w-[18px] h-[18px] overflow-hidden">
-                                             <div className="font-pixel text-[8px] text-black items-center justify-center pb-2 pl-2">
-                                                 {badges && <img src={badges[1]} className="absolute" />}
-                                             </div>
-                                         </div>
-                                         <div className="bg-gradient-to-r from-white w-[18px] h-[18px] overflow-hidden">
-                                             <div className="font-pixel text-[8px] text-black items-center justify-center pb-2 pl-2">
-                                                 {badges && <img src={badges[2]} className="absolute" />}
-                                             </div>
-                                         </div>
-                                         <div className="bg-gradient-to-r from-white w-[18px] h-[18px] overflow-hidden">
-                                             <div className="font-pixel text-[8px] text-black items-center justify-center pb-2 pl-2">
-                                                 {badges && <img src={badges[3]} className="absolute" />}
-                                             </div>
-                                         </div>
-                                         <div className="bg-gradient-to-r from-white w-[18px] h-[18px] overflow-hidden">
-                                             <div className="font-pixel text-[8px] text-black items-center justify-center pb-2 pl-2">
-                                                 {badges && <img src={badges[4]} className="absolute" />}
-                                             </div>
-                                         </div>
-                                         <div className="bg-gradient-to-r from-white w-[18px] h-[18px] overflow-hidden">
-                                             <div className="font-pixel text-[8px] text-black items-center justify-center pb-2 pl-2">
-                                                 {badges && <img src={badges[5]} className="absolute" />}
-                                             </div>
-                                         </div>
-                                         <div className="bg-gradient-to-r from-white w-[18px] h-[18px] overflow-hidden">
-                                             <div className="font-pixel text-[8px] text-black items-center justify-center pb-2 pl-2">
-                                                 {badges && <img src={badges[6]} className="absolute" />}
-                                             </div>
-                                         </div>
-                                     </div>
-                                </div>
+                {/* Chip icon (rotated) — placed over the border between
+                    the name bar and the bar below it */}
+                <img
+                    src={"https://i.imgur.com/H0qbp2F.png"}
+                    alt=""
+                    style={{
+                        position: "absolute",
+                        left: 58,
+                        top: 42,
+                        width: 52,
+                        height: 20,
+                        transform: "rotate(90deg)",
+                        pointerEvents: "none",
+                    }}
+                />
 
+                {/* Money */}
+                <div
+                    style={{
+                        marginLeft: "118px",
+                        marginTop: "20px",
+                        height: 32,
+                        background: "#7aa5c2",
+                        borderTopLeftRadius: "8px",
+                        borderBottomLeftRadius: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "3px",
+                    }}
+                >
+                    <span
+                        style={{
+                            fontFamily: "'Press Start 2P', monospace",
+                            fontSize: "10px",
+                            color: "#b8d8f0",
+                        }}
+                    >
+                        {money}
+                    </span>
+                    <img
+                        src="https://i.imgur.com/AT8Smxa.png"
+                        alt="$"
+                        style={{ width: 22, height: 22, filter: "invert(1)" }}
+                    />
+                </div>
 
-                                <div className="pt-[26px] pb-[14px]">
-                                    <div className="flex w-[552px] h-[36px]">
-                                        <button className="bg-white w-[100px] h-[52px] overflow-hidden" onClick={() => onRemovePokemon && onRemovePokemon(0)}>
-                                            <div
-                                                className="w-full h-full bg-center bg-no-repeat"
-                                                style={{ backgroundImage: `url(${pokemonImages && pokemonImages[0]})` }}
-                                            />
-                                        </button>
-                                        <div className="p-1"></div>
-                                        <button className="bg-white w-[36px] h-[36px] overflow-hidden" onClick={() => onRemovePokemon && onRemovePokemon(1)}>
-                                            <div
-                                                className="w-full h-full bg-center bg-no-repeat bg-cover"
-                                                style={{ backgroundImage: `url(${pokemonImages && pokemonImages[1]})` }}
-                                            />
-                                        </button>
-                                        <div className="p-1"></div>
-                                        <button className="bg-white w-[36px] h-[36px] overflow-hidden" onClick={() => onRemovePokemon && onRemovePokemon(2)}>
-                                            <div
-                                                className="w-full h-full bg-center bg-no-repeat bg-cover"
-                                                style={{ backgroundImage: `url(${pokemonImages && pokemonImages[2]})` }}
-                                            />
-                                        </button>
-                                        <div className="p-1"></div>
-                                        <button className="bg-white w-[36px] h-[36px] overflow-hidden" onClick={() => onRemovePokemon && onRemovePokemon(3)}>
-                                            <div
-                                                className="w-full h-full bg-center bg-no-repeat bg-cover"
-                                                style={{ backgroundImage: `url(${pokemonImages && pokemonImages[3]})` }}
-                                            />
-                                        </button>
-                                        <div className="p-1"></div>
-                                        <button className="bg-white w-[36px] h-[36px] overflow-hidden" onClick={() => onRemovePokemon && onRemovePokemon(4)}>
-                                            <div
-                                                className="w-full h-full bg-center bg-no-repeat bg-cover"
-                                                style={{ backgroundImage: `url(${pokemonImages && pokemonImages[4]})` }}
-                                            />
-                                        </button>
-                                        <div className="p-1"></div>
-                                        <button className="bg-white w-[36px] h-[36px] overflow-hidden" onClick={() => onRemovePokemon && onRemovePokemon(5)}>
-                                            <div
-                                                className="w-full h-full bg-center bg-no-repeat bg-cover"
-                                                style={{ backgroundImage: `url(${pokemonImages && pokemonImages[5]})` }}
-                                            />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+                {/* Level */}
+                <div
+                    style={{
+                        marginLeft: "118px",
+                        marginTop: "8px",
+                        height: 22,
+                        background: "#7aa5c2",
+                        borderTopLeftRadius: "8px",
+                        borderBottomLeftRadius: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    <span
+                        style={{
+                            fontFamily: "'Press Start 2P', monospace",
+                            fontSize: "10px",
+                            color: "#b8d8f0",
+                        }}
+                    >
+                        Nível {playTime}
+                    </span>
                 </div>
             </div>
 
+            {/* ── ROW 2 — badge strip ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ */}
+            <div
+                style={{
+                    marginLeft: "118px",
+                    marginTop: "12px",
+                    width: "215px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    height: 22,
+                }}
+            >
+                {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                    <div
+                        key={i}
+                        style={{
+                            width: 18,
+                            height: 18,
+                            background: slotBg,
+                            overflow: "hidden",
+                            flexShrink: 0,
+                        }}
+                    >
+                        {badges?.[i] && (
+                            <img
+                                src={badges[i]}
+                                alt=""
+                                style={{ width: "100%", height: "100%", display: "block", objectFit: "cover" }}
+                            />
+                        )}
+                    </div>
+                ))}
+            </div>
 
+            {/* ── ROW 3 — party ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ */}
+            <div
+                style={{
+                    position: "absolute",   /* stays inside the 452px wrapper */
+                    left: 14,
+                    right: 14,
+                    bottom: 0,
+                    height: 100,
+                    background: "white",
+                    borderTopLeftRadius: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 8px",
+                }}
+            >
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <button
+                        key={i}
+                        onClick={() => onRemovePokemon?.(i)}
+                        title="Clique para remover"
+                        style={{
+                            background: "#eeeeee",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: 0,
+                            overflow: "hidden",
+                            /* slot 0 is 100×90, slots 1-5 are 36×36 */
+                            ...(i === 0
+                                ? { width: 100, height: 90 }
+                                : { width: 36, height: 36 }),
+                        }}
+                    >
+                        <div
+                            style={{
+                                width: "100%",
+                                height: "100%",
+                                backgroundImage: `url(${pokemonImages?.[i]})`,
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                            }}
+                        />
+                    </button>
+                ))}
+            </div>
         </div>
-    )
-
-}
+    );
+};
 
 export default TrainerCard;
