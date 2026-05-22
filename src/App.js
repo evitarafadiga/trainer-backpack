@@ -2,6 +2,9 @@ import TrainerCard from "./components/TrainerCard"
 import Dropdown from "./components/Dropdown";
 import React from 'react';
 import Pokedex from 'pokedex-promise-v2';
+import html2canvas from 'html2canvas';
+import Alert from "./components/Alert";
+import BadgePicker from "./components/BadgePicker";
 
 const P = new Pokedex();
 const footerURL = "./img/footer-texture.png";
@@ -11,6 +14,7 @@ export default function App() {
 
   const [playerName, setName] = React.useState(localStorage.getItem("playerName") || "Trainer");
   const [seasonsPlayed, setSeasons] = React.useState(localStorage.getItem("seasonsPlayed") || "000:00");
+  const cardRef = React.useRef(null);
 
   const [color, setColor] = React.useState(localStorage.getItem("cardColor1") || '#0a4b64ff');
   const [color2, setColor2] = React.useState(localStorage.getItem("cardColor2") || '#407971ff');
@@ -25,10 +29,37 @@ export default function App() {
 
   const [badges, setBadges] = React.useState([]);
   const [badgeCount, setBadgeCount] = React.useState(0);
-  const [money, setMoney] = React.useState(0);
+  const [money, setMoney] = React.useState(localStorage.getItem("money") || "00.00");
+  const [allPokemons, setAllPokemons] = React.useState([]);
+
+  React.useEffect(() => {
+    const loadPokemons = async () => {
+      const cached = localStorage.getItem('allPokemons');
+      if (cached) {
+        setAllPokemons(JSON.parse(cached));
+        return;
+      }
+
+      try {
+        // Fetch all pokemons (safe upper limit)
+        const response = await P.getPokemonsList({ limit: 2000, offset: 0 });
+        const formatted = response.results.map((p, index) => ({
+          label: p.name,
+          value: index
+        }));
+        localStorage.setItem('allPokemons', JSON.stringify(formatted));
+        setAllPokemons(formatted);
+      } catch (error) {
+        console.error("Failed to load pokemons", error);
+      }
+    };
+
+    loadPokemons();
+  }, []);
 
   React.useEffect(() => { localStorage.setItem("playerName", playerName); }, [playerName]);
   React.useEffect(() => { localStorage.setItem("seasonsPlayed", seasonsPlayed); }, [seasonsPlayed]);
+  React.useEffect(() => { localStorage.setItem("money", money); }, [money]);
   React.useEffect(() => { localStorage.setItem("cardColor1", color); }, [color]);
   React.useEffect(() => { localStorage.setItem("cardColor2", color2); }, [color2]);
   React.useEffect(() => { localStorage.setItem("pokemonImages", JSON.stringify(pokemonImages)); }, [pokemonImages]);
@@ -37,19 +68,37 @@ export default function App() {
     console.log('App received pokemon:', pokemonName);
     if (!pokemonName) return;
     if (pokemonImages.length >= 6) {
-      alert('Maximum of 6 Pokemon allowed!');
+      alert('Máximo de 6 Pokémons permitido!');
       return;
     }
-    
+
     P.getPokemonByName(pokemonName)
       .then((response) => {
         const image = response.sprites.front_default;
-        console.log('Fetching image:', image);
         setPokemonImages(prev => [...prev, image]);
       })
       .catch((error) => {
-        console.error('Error fetching pokemon:', error);
+        console.error('Erro ao buscar Pokémons:', error);
       });
+  }
+
+  const addBadge = (badgeUrl, pos) => {
+    setBadges(prev => {
+      const updated = [...prev]
+      updated[pos - 1] = badgeUrl
+      return updated
+    })
+  }
+
+  const removeBadge = (index) => {
+    setBadges(prev => {
+      if (index === undefined || index === null) {
+        return prev.slice(0, -1)
+      }
+      const updated = [...prev]
+      updated[index] = null
+      return updated
+    })
   }
 
   const removePokemon = (index) => {
@@ -75,91 +124,207 @@ export default function App() {
       })
   }
 
+  const [alertMessage, setAlertMessage] = React.useState("");
+  const [showAlert, setShowAlert] = React.useState(false);
+
+  const handleDownloadImage = async () => {
+    if (cardRef.current) {
+      try {
+        const canvas = await html2canvas(cardRef.current, {
+          useCORS: true,
+          scale: 2, // Higher resolution
+          backgroundColor: null,
+        });
+
+        canvas.toBlob(blob => {
+          if (blob) {
+            const item = new ClipboardItem({ "image/png": blob });
+            navigator.clipboard.write([item]).then(() => {
+              setAlertMessage("Cartão de treinador copiado para a área de transferência!");
+              setShowAlert(true);
+              setTimeout(() => setShowAlert(false), 3000);
+            }).catch(err => {
+              console.error("Failed to copy: ", err);
+              alert("Falha ao copiar. Tente novamente.");
+            });
+          }
+        });
+      } catch (error) {
+        console.error("Error creating image:", error);
+      }
+    }
+  };
+
   return (
-    <div className="flex flex-col h-screen justify-between">
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-800">
+      <Alert message={alertMessage} show={showAlert} />
 
-      {/*header*/}
-      <div className="bg-gradient-to-b from-sky-300 to-transparent ">
-        <div className="flex py-10 justify-center items-center space-x-4 text-base">
-          <TrainerCard
-            playerName={playerName}
-            playTime={seasonsPlayed}
-            money={money}
-            badges={badges}
-            badgeCount={badgeCount}
-            cardColor1={color}
-            cardColor2={color2}
-            pokemonImages={pokemonImages}
-            onRemovePokemon={removePokemon}
-          />
-        </div>
-        <div className="flex flex-col justify-center items-center space-x-4 text-base">
-          <form className="flex flex-col" onSubmit={(e) => e.preventDefault()}>
-            <label className="p-2">
-              Nome:
-              <input className="m-1 border border-black rounded" type="text" name="playerName" value={playerName} onChange={(e) => {
-                setName(e.target.value);
-              }} />
-            </label>
-            <label className="p-2">
-              Temporadas jogadas:
-              <input className="m-1 border border-black rounded" type="text" value={seasonsPlayed} onChange={(e) => {
-                setSeasons(e.target.value);
-              }} />
-            </label>
+      {/* Main Content Area */}
+      <div className="flex-grow container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-12 items-start justify-center">
 
-            <div className="flex flex-row w-[300px] justify-center items-center space-x-4 p-2">
-
-              <label htmlFor="color-picker-1">
-                Cor 1:
-              </label>
-              <input
-                type="color"
-                id="color-picker-1"
-                value={color}
-                onChange={event => {
-                  setColor(event.target.value);
-                }}
-                className="m-1 border border-black rounded rounded-full w-[50px] h-[50px]"
-              />
-
-              <label htmlFor="color-picker-2">
-                Cor 2:
-              </label>
-              <input
-                type="color"
-                id="color-picker-2"
-                value={color2}
-                onChange={event => {
-                  setColor2(event.target.value);
-                }}
-                className="m-1 border border-black rounded rounded-full w-[50px] h-[50px]"
-              />
+          {/* Left Column: Trainer Card Preview */}
+          <div className="lg:sticky lg:top-8 w-full lg:w-auto flex flex-col items-center">
+            <h2 className="text-xl font-bold text-slate-700 mb-6 hidden lg:block">Prévia</h2>
+            <div className="transform transition-transform hover:scale-105 duration-300 shadow-2xl rounded-lg">
+              <div ref={cardRef}>
+                <TrainerCard
+                  playerName={playerName}
+                  playTime={seasonsPlayed}
+                  money={money}
+                  badges={badges}
+                  badgeCount={badgeCount}
+                  cardColor1={color}
+                  cardColor2={color2}
+                  pokemonImages={pokemonImages}
+                  onRemovePokemon={removePokemon}
+                />
+              </div>
             </div>
-
-          </form>
-        </div>
-        <div className="flex flex-col justify-center items-center column-2">
-          <div className="flex flex-col">
-            Pokémon:
+            <button
+              onClick={handleDownloadImage}
+              className="mt-6 flex items-center gap-2 bg-slate-800 text-white px-6 py-2 rounded-full font-medium hover:bg-slate-700 transition-colors shadow-lg active:scale-95 transform"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              </svg>
+              Copiar Cartão
+            </button>
+            <p className="mt-4 text-sm text-slate-500 text-center max-w-xs">
+              Este é como seu cartão de treinador aparecerá para os outros.
+            </p>
           </div>
-          <div className="flex flex-wrap justify-center items-center gap-4">
-            <Dropdown onSelect={handlePokemonSelect} pos={1} />
-            <Dropdown onSelect={handlePokemonSelect} pos={2} />
-            <Dropdown onSelect={handlePokemonSelect} pos={3} />
-            <Dropdown onSelect={handlePokemonSelect} pos={4} />
-            <Dropdown onSelect={handlePokemonSelect} pos={5} />
-            <Dropdown onSelect={handlePokemonSelect} pos={6} />
-          </div>
-        </div>
 
+          {/* Right Column: Configuration Form */}
+          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-full max-w-2xl border border-gray-100">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
+
+              {/* Section: Trainer Info */}
+              <section>
+                <h3 className="text-lg font-semibold text-slate-800 border-b pb-2 mb-4 flex items-center gap-2">
+                  <span className="bg-blue-100 text-blue-600 py-1 px-2 rounded text-sm">01</span> Informações do Treinador
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-slate-600 mb-1">Nome de Treinador</label>
+                    <input
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
+                      type="text"
+                      placeholder="Ash Ketchum"
+                      name="playerName"
+                      value={playerName}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-slate-600 mb-1">Poké-Dollars</label>
+                    <input
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
+                      type="text"
+                      placeholder="00.00"
+                      value={money}
+                      onChange={(e) => setMoney(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-slate-600 mb-1">Tempo de Jogo (total de temporadas jogadas)</label>
+                    <input
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
+                      type="text"
+                      placeholder="000:00"
+                      value={seasonsPlayed}
+                      onChange={(e) => setSeasons(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              {/* Section: Card Style */}
+              <section>
+                <h3 className="text-lg font-semibold text-slate-800 border-b pb-2 mb-4 flex items-center gap-2">
+                  <span className="bg-purple-100 text-purple-600 py-1 px-2 rounded text-sm">02</span> Estilo do Cartão
+                </h3>
+                <div className="flex flex-wrap gap-8 items-center">
+                  <div className="flex items-center gap-4">
+                    <label htmlFor="color-picker-1" className="text-sm font-medium text-slate-600">Cor Primária</label>
+                    <div className="relative overflow-hidden rounded-full w-10 h-10 shadow-sm ring-2 ring-offset-2 ring-gray-200 cursor-pointer hover:scale-110 transition-transform">
+                      <input
+                        type="color"
+                        id="color-picker-1"
+                        value={color}
+                        onChange={event => setColor(event.target.value)}
+                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] p-0 border-none cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <label htmlFor="color-picker-2" className="text-sm font-medium text-slate-600">Cor Secundária</label>
+                    <div className="relative overflow-hidden rounded-full w-10 h-10 shadow-sm ring-2 ring-offset-2 ring-gray-200 cursor-pointer hover:scale-110 transition-transform">
+                      <input
+                        type="color"
+                        id="color-picker-2"
+                        value={color2}
+                        onChange={event => setColor2(event.target.value)}
+                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] p-0 border-none cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Section: Pokémon Team */}
+              <section>
+                <h3 className="text-lg font-semibold text-slate-800 border-b pb-2 mb-4 flex items-center gap-2">
+                  <span className="bg-red-100 text-red-600 py-1 px-2 rounded text-sm">03</span> Equipe Pokémon
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[1, 2, 3, 4, 5, 6].map((num) => (
+                    <div key={num} className="bg-gray-50 p-3 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Slot {num}</label>
+                      <Dropdown onSelect={handlePokemonSelect} pos={num} options={allPokemons} />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-400 mt-2 italic">Selecione um Pokémon para adicioná-lo ao time. Clique no sprite, no cartão, para removê-lo.</p>
+              </section>
+
+              {/* Section: Badges */}
+              <section>
+                <h3 className="text-lg font-semibold text-slate-800 border-b pb-2 mb-4 flex items-center gap-2">
+                  <span className="bg-yellow-100 text-yellow-600 py-1 px-2 rounded text-sm">04</span> Insígnias
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[1, 2, 3, 4, 5, 6].map((num) => (
+                    <div key={num} className="bg-gray-50 p-3 rounded-lg border border-gray-200 hover:border-yellow-300 transition-colors">
+                      <BadgePicker
+                        pos={num}
+                        onSelect={addBadge}
+                        disabled={badges[num - 1]}
+                      />
+                      {badges[num - 1] && (
+                        <button
+                          onClick={() => removeBadge(num - 1)}
+                          className="mt-2 text-xs text-red-500 hover:text-red-700 underline"
+                        >
+                          Remover
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+            </form>
+          </div>
+
+        </div>
       </div>
 
-      {/*footer*/}
-      <div className="bg-cover h-full" style={{ backgroundImage: `url(${footerURL})`, }}>
+      {/* Footer */}
+      <div className="h-32 bg-cover bg-center border-t border-gray-200 mt-auto" style={{ backgroundImage: `url(${footerURL})` }}></div>
 
-      </div>
-    </div >
+    </div>
   )
 }
 

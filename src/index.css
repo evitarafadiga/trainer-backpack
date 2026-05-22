@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.font-pixel {
+  font-family: 'Press Start 2P', cursive;
+}
