@@ -18,7 +18,7 @@ export function Dropdown({ onSelect, pos, options }) {
     return (
         <div className='flex'>
             <div className='justify-center text-sm'>
-                {pos && pos == 1 && <span>Pokémon Inicial</span>}
+                {pos && pos === 1 && <span>Pokémon Inicial</span>}
 
                 <SimpleDropdown
                     options={options || []}

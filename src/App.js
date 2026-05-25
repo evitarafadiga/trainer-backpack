@@ -44,7 +44,6 @@ export default function App() {
       return [];
     }
   });
-  const [badgeCount, setBadgeCount] = React.useState(0);
   const [money, setMoney] = React.useState(localStorage.getItem("money") || "00.00");
   const [allPokemons, setAllPokemons] = React.useState([]);
   const [trainerImage, setTrainerImage] = React.useState(localStorage.getItem("trainerImage") || 'https://play.pokemonshowdown.com/sprites/trainers/aaron.png');
@@ -137,20 +136,6 @@ export default function App() {
     });
   }
 
-  function getBadgeCount() {
-    P.getBadgeCount()
-      .then((response) => {
-        setBadgeCount(response.count);
-      })
-  }
-
-  function getMoney() {
-    P.getMoney()
-      .then((response) => {
-        setMoney(response.money);
-      })
-  }
-
   const [alertMessage, setAlertMessage] = React.useState("");
   const [showAlert, setShowAlert] = React.useState(false);
 
@@ -203,7 +188,6 @@ export default function App() {
                    playTime={seasonsPlayed}
                    money={money}
                    badges={badges}
-                   badgeCount={badgeCount}
                    cardColor1={color}
                    cardColor2={color2}
                    pokemonImages={pokemonImages}

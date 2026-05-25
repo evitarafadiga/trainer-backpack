@@ -7,8 +7,6 @@ const TrainerCard = ({
     const AW = 100; const AL = 24;
     const GX = 12; const BL = AL + AW + GX;
     const BP = 14; const BW = Wc - BL - BP;
-    const CX = GX;
-    const CY = 44;
 
     return (
         <div
@@ -27,11 +25,12 @@ const TrainerCard = ({
             <img
                 src={backgroundImg || ""}
                 style={{ backgroundSize: "cover", width: "100%", height: "100%"}}
+                alt={backgroundImg.toString()}
             />
             {/* trainer sprite — absolute so it bleeds 8px above the gray bar */}
             <img
                 src={trainerImage}
-                alt=""
+                alt={trainerImage.toString()}
                 draggable={false}
                 style={{
                     position: "absolute",

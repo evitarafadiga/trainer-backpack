@@ -1,6 +1,5 @@
 import { SimpleDropdown } from 'react-js-dropdavn'
 import 'react-js-dropdavn/dist/index.css'
-import { useState } from 'react'
 
 const BADGES = [
   { label: 'Rock Music Badge', value: 'https://i.imgur.com/5JCBXbU.png' },
@@ -12,7 +11,6 @@ const BADGES = [
 ]
 
 export function BadgePicker({ onSelect, pos, disabled }) {
-  const [customUrl, setCustomUrl] = useState('')
 
   const handleSelect = (e) => {
     if (onSelect && e) {
