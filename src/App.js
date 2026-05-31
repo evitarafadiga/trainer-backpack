@@ -3,17 +3,20 @@ import TrainerBackgroundPicker from "./components/TrainerBackgroundPicker"
 import Dropdown from "./components/Dropdown"
 import TrainerSpritePicker from "./components/TrainerSpritePicker"
 import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+import Remembrance from './Remembrance'
 import Pokedex from 'pokedex-promise-v2'
 import html2canvas from 'html2canvas'
 import Alert from "./components/Alert"
 import BadgePicker from "./components/BadgePicker"
 import backgrounds from "./backgrounds.json"
+import HeaderComponent from "./components/HeaderComponent"
 
 const P = new Pokedex();
 const footerURL = "./img/footer-texture.png";
 
 
-export default function App() {
+function MainApp() {
 
   const [playerName, setName] = React.useState(localStorage.getItem("playerName") || "Trainer");
   const [seasonsPlayed, setSeasons] = React.useState(localStorage.getItem("seasonsPlayed") || "0");
@@ -172,7 +175,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-800">
       <Alert message={alertMessage} show={showAlert} />
-
+      <HeaderComponent></HeaderComponent>
       {/* Main Content Area */}
       <div className="flex-grow container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-12 items-start justify-center">
@@ -356,6 +359,15 @@ export default function App() {
       <div className="h-32 bg-cover bg-center border-t border-gray-200 mt-auto" style={{ backgroundImage: `url(${footerURL})` }}></div>
 
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<MainApp />} />
+      <Route path="/remembrance" element={<Remembrance />} />
+    </Routes>
   )
 }
 
